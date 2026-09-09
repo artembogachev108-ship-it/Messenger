@@ -1,87 +1,511 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Мой Чат</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Чат</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial; background: #0a0a0a; color: white; height: 100vh; display: flex; flex-direction: column; padding: 10px; }
-        #header { background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
-        #chat { flex: 1; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 10px; }
-        .msg { padding: 8px 12px; margin: 5px 0; border-radius: 8px; max-width: 80%; }
-        .me { background: #0066ff; margin-left: auto; text-align: right; }
-        .other { background: #2a2a2a; }
-        #input-area { display: flex; gap: 8px; margin-top: 10px; }
-        #input-area input { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #1a1a1a; color: white; }
-        #input-area button { padding: 12px 20px; border-radius: 20px; border: none; background: #0066ff; color: white; }
-        #name-input { margin-bottom: 10px; }
-        #name-input input { width: 100%; padding: 8px 12px; border-radius: 8px; border: none; background: #1a1a1a; color: white; }
+        /* ————— ОБЩИЕ СТИЛИ ————— */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .app {
+            max-width: 420px;
+            width: 100%;
+            height: 750px;
+            background: #1a1a2e;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ————— ШАПКА ————— */
+        .header {
+            background: #16213e;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #2a2a4a;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-title {
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .header-status {
+            color: #4facfe;
+            font-size: 12px;
+        }
+
+        .header-icon {
+            color: #8a8aa8;
+            font-size: 22px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        /* ————— ОБЛАСТЬ СООБЩЕНИЙ ————— */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 14px 10px 14px;
+            background: #0f0f1f;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: #3a3a5a;
+            border-radius: 10px;
+        }
+
+        /* ————— СООБЩЕНИЕ ————— */
+        .message {
+            max-width: 80%;
+            padding: 9px 14px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            animation: fadeIn 0.2s ease;
+            position: relative;
+        }
+
+        .message .msg-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .message .msg-time {
+            font-size: 10px;
+            opacity: 0.5;
+            margin-left: 8px;
+        }
+
+        /* Своё сообщение */
+        .message.mine {
+            background: #4facfe;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.mine .msg-name {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Чужое сообщение */
+        .message.other {
+            background: #1e1e3a;
+            color: #e0e0f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.other .msg-name {
+            color: #4facfe;
+        }
+
+        /* Системное сообщение */
+        .message.system {
+            background: transparent;
+            color: #6a6a8a;
+            font-size: 12px;
+            text-align: center;
+            align-self: center;
+            padding: 4px 12px;
+            border-radius: 12px;
+            max-width: 90%;
+        }
+
+        /* Анимация */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ————— ПАНЕЛЬ ВВОДА ————— */
+        .input-area {
+            background: #16213e;
+            padding: 10px 14px 14px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid #2a2a4a;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .input-area input[type="text"] {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 1px solid #2a2a4a;
+            background: #0f0f1f;
+            color: #f0f0ff;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+            min-width: 120px;
+        }
+
+        .input-area input[type="text"]:focus {
+            border-color: #4facfe;
+        }
+
+        .input-area input::placeholder {
+            color: #555577;
+        }
+
+        .input-area .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #4facfe;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .input-area .send-btn:hover {
+            background: #3a8fe0;
+            transform: scale(1.05);
+        }
+
+        .input-area .name-input {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #2a2a4a;
+            background: #0f0f1f;
+            color: #f0f0ff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .input-area .name-input:focus {
+            border-color: #4facfe;
+        }
+
+        /* ————— АДАПТАЦИЯ ПОД ТЕЛЕФОН ————— */
+        @media (max-width: 440px) {
+            .app {
+                height: 100vh;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .input-area {
+                padding: 8px 10px 12px 10px;
+            }
+
+            .input-area input[type="text"] {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+
+            .message {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* ————— ЭМОДЗИ-ПИКЕР (простой) ————— */
+        .emoji-row {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0;
+            flex-wrap: wrap;
+        }
+
+        .emoji-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .emoji-btn:hover {
+            background: #2a2a4a;
+        }
     </style>
 </head>
 <body>
-    <div id="header">
-        <h2>💬 Мой Чат</h2>
-        <div id="name-input">
-            <input id="username" placeholder="Ваше имя..." value="">
+
+<div class="app" id="app">
+    <!-- ШАПКА -->
+    <div class="header">
+        <div class="avatar" id="avatar">📨</div>
+        <div class="header-info">
+            <div class="header-title" id="chatName">Общий чат</div>
+            <div class="header-status" id="userCount">👤 1 онлайн</div>
         </div>
+        <span class="header-icon">⋮</span>
     </div>
-    <div id="chat"></div>
-    <div id="input-area">
-        <input id="msgInput" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-        <button onclick="send()">Отправить</button>
+
+    <!-- ОБЛАСТЬ СООБЩЕНИЙ -->
+    <div class="chat-area" id="chatArea">
+        <div class="message system">🔹 Добро пожаловать в чат в стиле Telegram!</div>
+        <div class="message system">Напишите своё имя и отправляйте сообщения</div>
     </div>
-    <script>
-        const chat = document.getElementById('chat');
-        const msgInput = document.getElementById('msgInput');
-        const username = document.getElementById('username');
-        
-        // ВАЖНО: замени на свой код
-        const ROOM = "мой_секретный_чат_2025";
-        
-        username.onchange = function() {
-            localStorage.setItem('name', this.value);
-        };
-        
-        if (localStorage.getItem('name')) {
-            username.value = localStorage.getItem('name');
+
+    <!-- ПАНЕЛЬ ВВОДА -->
+    <div class="input-area">
+        <input class="name-input" id="nameInput" placeholder="Имя" value="Пользователь" maxlength="20">
+
+        <input type="text" id="msgInput" placeholder="Сообщение..." autocomplete="off" />
+
+        <!-- ЭМОДЗИ (быстрый доступ) -->
+        <div class="emoji-row" id="emojiRow">
+            <button class="emoji-btn" data-emoji="😊">😊</button>
+            <button class="emoji-btn" data-emoji="😂">😂</button>
+            <button class="emoji-btn" data-emoji="❤️">❤️</button>
+            <button class="emoji-btn" data-emoji="🔥">🔥</button>
+            <button class="emoji-btn" data-emoji="👍">👍</button>
+            <button class="emoji-btn" data-emoji="🎉">🎉</button>
+        </div>
+
+        <button class="send-btn" id="sendBtn">➤</button>
+    </div>
+</div>
+
+<script>
+    // ————— НАСТРОЙКИ —————
+    const STORAGE_KEY = 'tg_chat_messages';
+    const NAME_KEY = 'tg_chat_name';
+
+    // ————— ЭЛЕМЕНТЫ —————
+    const chatArea = document.getElementById('chatArea');
+    const msgInput = document.getElementById('msgInput');
+    const nameInput = document.getElementById('nameInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const userCount = document.getElementById('userCount');
+
+    // ————— ЗАГРУЗКА ИМЕНИ —————
+    const savedName = localStorage.getItem(NAME_KEY);
+    if (savedName) nameInput.value = savedName;
+
+    // ————— ЗАГРУЗКА СООБЩЕНИЙ —————
+    function loadMessages() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (!data) return [];
+        try {
+            return JSON.parse(data);
+        } catch {
+            return [];
         }
-        
-        function loadMessages() {
-            const data = localStorage.getItem(ROOM);
-            if (data) {
-                const msgs = JSON.parse(data);
-                chat.innerHTML = msgs.map(m => `
-                    <div class="msg ${m.name === username.value ? 'me' : 'other'}">
-                        <b>${m.name}</b><br>
-                        ${m.text}
-                        <br><small style="opacity:0.5;">${m.time}</small>
-                    </div>
-                `).join('');
-                chat.scrollTop = chat.scrollHeight;
-            }
+    }
+
+    // ————— СОХРАНЕНИЕ СООБЩЕНИЙ —————
+    function saveMessages(messages) {
+        if (messages.length > 200) messages = messages.slice(-200);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
+
+    // ————— ОТРИСОВКА СООБЩЕНИЙ —————
+    function renderMessages() {
+        const messages = loadMessages();
+        const myName = nameInput.value.trim() || 'Пользователь';
+
+        // Очищаем, но оставляем только системные сообщения (если есть)
+        const systemMessages = [];
+        chatArea.querySelectorAll('.message.system').forEach(el => {
+            systemMessages.push(el);
+        });
+
+        chatArea.innerHTML = '';
+
+        // Добавляем системные
+        systemMessages.forEach(el => chatArea.appendChild(el));
+
+        // Добавляем обычные сообщения
+        messages.forEach(msg => {
+            const isMine = msg.name === myName;
+            const div = document.createElement('div');
+            div.className = `message ${isMine ? 'mine' : 'other'}`;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'msg-name';
+            nameSpan.textContent = msg.name;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'msg-time';
+            timeSpan.textContent = msg.time || '';
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = msg.text;
+
+            div.appendChild(nameSpan);
+            div.appendChild(textSpan);
+            div.appendChild(timeSpan);
+
+            chatArea.appendChild(div);
+        });
+
+        // Скролл вниз
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        // Обновляем счётчик
+        updateUserCount();
+    }
+
+    // ————— ОБНОВЛЕНИЕ КОЛИЧЕСТВА ПОЛЬЗОВАТЕЛЕЙ —————
+    function updateUserCount() {
+        const messages = loadMessages();
+        const users = new Set();
+        messages.forEach(msg => users.add(msg.name));
+        const count = users.size || 1;
+        userCount.textContent = `👤 ${count} онлайн`;
+    }
+
+    // ————— ОТПРАВКА СООБЩЕНИЯ —————
+    function sendMessage() {
+        const text = msgInput.value.trim();
+        const name = nameInput.value.trim() || 'Аноним';
+
+        if (!text) return;
+
+        // Сохраняем имя
+        localStorage.setItem(NAME_KEY, name);
+
+        const messages = loadMessages();
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+        messages.push({
+            name: name,
+            text: text,
+            time: timeStr,
+            timestamp: now.getTime()
+        });
+
+        saveMessages(messages);
+        msgInput.value = '';
+        renderMessages();
+    }
+
+    // ————— ДОБАВЛЕНИЕ ЭМОДЗИ —————
+    function addEmoji(emoji) {
+        msgInput.value += emoji;
+        msgInput.focus();
+    }
+
+    // ————— СОБЫТИЯ —————
+    sendBtn.addEventListener('click', sendMessage);
+
+    msgInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
         }
-        
-        function send() {
-            const text = msgInput.value.trim();
-            const name = username.value.trim() || 'Аноним';
-            if (!text || !name) return;
-            
-            const msgs = JSON.parse(localStorage.getItem(ROOM) || '[]');
-            msgs.push({
-                name: name,
-                text: text,
-                time: new Date().toLocaleTimeString()
-            });
-            if (msgs.length > 100) msgs.shift();
-            
-            localStorage.setItem(ROOM, JSON.stringify(msgs));
-            msgInput.value = '';
-            loadMessages();
-        }
-        
-        setInterval(loadMessages, 2000);
-        loadMessages();
-    </script>
+    });
+
+    // Эмодзи
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            addEmoji(btn.dataset.emoji);
+        });
+    });
+
+    // Сохраняем имя при изменении
+    nameInput.addEventListener('change', () => {
+        localStorage.setItem(NAME_KEY, nameInput.value.trim() || 'Пользователь');
+        renderMessages();
+    });
+
+    // ————— АВТООБНОВЛЕНИЕ (каждые 3 секунды) —————
+    setInterval(() => {
+        renderMessages();
+    }, 3000);
+
+    // ————— ПЕРВЫЙ ЗАПУСК —————
+    renderMessages();
+
+    // Если нет сообщений — добавить приветствие
+    if (loadMessages().length === 0) {
+        const messages = loadMessages();
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        messages.push({
+            name: 'Система',
+            text: '👋 Привет! Чат работает в стиле Telegram',
+            time: timeStr,
+            timestamp: now.getTime()
+        });
+        messages.push({
+            name: 'Система',
+            text: '✏️ Напиши своё имя и отправляй сообщения!',
+            time: timeStr,
+            timestamp: now.getTime() + 1
+        });
+        saveMessages(messages);
+        renderMessages();
+    }
+
+    // ————— ПЕРЕРИСОВКА ПРИ ФОКУСЕ —————
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) renderMessages();
+    });
+
+    console.log('💬 Telegram-чат запущен!');
+    console.log('📱 Твой сайт:', window.location.href);
+</script>
+
 </body>
-</html>
+    </html>
