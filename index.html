@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Мой Чат</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: #0a0a0a; color: white; height: 100vh; display: flex; flex-direction: column; padding: 10px; }
+        #header { background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+        #chat { flex: 1; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 10px; }
+        .msg { padding: 8px 12px; margin: 5px 0; border-radius: 8px; max-width: 80%; }
+        .me { background: #0066ff; margin-left: auto; text-align: right; }
+        .other { background: #2a2a2a; }
+        #input-area { display: flex; gap: 8px; margin-top: 10px; }
+        #input-area input { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #1a1a1a; color: white; }
+        #input-area button { padding: 12px 20px; border-radius: 20px; border: none; background: #0066ff; color: white; }
+        #name-input { margin-bottom: 10px; }
+        #name-input input { width: 100%; padding: 8px 12px; border-radius: 8px; border: none; background: #1a1a1a; color: white; }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h2>💬 Мой Чат</h2>
+        <div id="name-input">
+            <input id="username" placeholder="Ваше имя..." value="">
+        </div>
+    </div>
+    <div id="chat"></div>
+    <div id="input-area">
+        <input id="msgInput" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
+        <button onclick="send()">Отправить</button>
+    </div>
+    <script>
+        const chat = document.getElementById('chat');
+        const msgInput = document.getElementById('msgInput');
+        const username = document.getElementById('username');
+        
+        // ВАЖНО: замени на свой код
+        const ROOM = "мой_секретный_чат_2025";
+        
+        username.onchange = function() {
+            localStorage.setItem('name', this.value);
+        };
+        
+        if (localStorage.getItem('name')) {
+            username.value = localStorage.getItem('name');
+        }
+        
+        function loadMessages() {
+            const data = localStorage.getItem(ROOM);
+            if (data) {
+                const msgs = JSON.parse(data);
+                chat.innerHTML = msgs.map(m => `
+                    <div class="msg ${m.name === username.value ? 'me' : 'other'}">
+                        <b>${m.name}</b><br>
+                        ${m.text}
+                        <br><small style="opacity:0.5;">${m.time}</small>
+                    </div>
+                `).join('');
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+        
+        function send() {
+            const text = msgInput.value.trim();
+            const name = username.value.trim() || 'Аноним';
+            if (!text || !name) return;
+            
+            const msgs = JSON.parse(localStorage.getItem(ROOM) || '[]');
+            msgs.push({
+                name: name,
+                text: text,
+                time: new Date().toLocaleTimeString()
+            });
+            if (msgs.length > 100) msgs.shift();
+            
+            localStorage.setItem(ROOM, JSON.stringify(msgs));
+            msgInput.value = '';
+            loadMessages();
+        }
+        
+        setInterval(loadMessages, 2000);
+        loadMessages();
+    </script>
+</body>
+</html>
